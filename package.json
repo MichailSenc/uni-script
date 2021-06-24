@@ -7,16 +7,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Mixail <misha.senc@mail.ru>",
   "license": "ISC",
   "dependencies": {
     "adm-zip": "^0.5.5",
     "datejs": "^1.0.0-rc3",
     "fs-extra": "^10.0.0",
     "machinepack-zip": "^1.1.0",
-    "ncp": "^2.0.0",
     "prompts": "^2.4.1",
-    "rimraf": "^3.0.2",
-    "wrench": "^1.5.9"
+    "rimraf": "^3.0.2"
   }
 }

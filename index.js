@@ -6,12 +6,7 @@ const Zip = require("machinepack-zip");
 const path = require("path");
 const AdmZip = require("adm-zip");
 const rimraf = require("rimraf");
-
-const ncp = require("ncp").ncp;
-const wrench = require("wrench");
-const util = require("util");
 const fse = require("fs-extra");
-const { override } = require("prompts");
 
 require("datejs");
 
@@ -23,10 +18,19 @@ const fileNames = [
     { foldpath: path.join(__dirname, "..", "kanboard", "kanboard_ssl"), folder: "kanboard_ssl" },
 ];
 
-fileNames.forEach((item) => console.log(item));
 
 const SAVES = "saves";
 const UNZIPPED = "unzipped";
+
+if (process.argv[2] === '--help' || process.argv[2] === '-h') {
+    console.log("\n\n----------------------------БЕКАП_СОХРАНЕНЙ----------------------------\n");
+    console.log("После запуска скрипта появится интерактивный выбор действия:\n\t- Сделать сохранение\n\t- Загрузить сохранение\n\t- Отмена\n\n");
+    console.log("СДЕЛАТЬ СОХРАНЕНИЕ: архивирует созданные данные в каталог, название которого имеет формат: \"dd-MM-yyyy-HH-mm-ss\" и сохраняет это в каталог \"saves\"\n");
+    console.log("ЗАГРУЗИТЬ СОХРАНЕНИЕ: если есть доступные сохранения в каталоге \"saves\", выводит их пользователю для выбора. После выбора разархивирует нужный каталог и заменит все данные для каждой системы\n");
+    console.log("ОТМЕНА: выход из скрипта\n");
+    console.log("ПОМОЩЬ: --help, -h");
+    return;
+}
 
 (async () => {
     const choicetype = await prompts({
@@ -91,22 +95,13 @@ const UNZIPPED = "unzipped";
 
         console.log("Перенос файлов в нужные каталоги...");
         fileNames.forEach(({ foldpath, folder }) => {
-            console.log(`Копирование ${folder} в ${path.dirname(foldpath)}...`);
+            console.log(`Копирование "${folder}" в "${path.dirname(foldpath)}"...`);
             rimraf.sync(foldpath);
-            // ncp(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath), function (err) {
-            //     if (err) {
-            //         return console.error(err);
-            //     }
-            //     console.log("done!");
-            // });
-            console.log(path.join(__dirname, UNZIPPED, folder));
-            console.log(path.dirname(foldpath));
-            // wrench.copyDirSyncRecursive(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath));
             fse.copySync(path.join(__dirname, UNZIPPED, folder), foldpath);
         });
 
         rimraf.sync(path.join(__dirname, UNZIPPED));
-        console.log("Перенос сохранения успешно выполнен!");
+        console.log("Перенос сохранения успешно завершен!");
     };
 
     switch (choicetype.value) {
