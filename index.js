@@ -5,6 +5,7 @@ const fs = require("fs");
 const Zip = require("machinepack-zip");
 const path = require("path");
 const { exec } = require("child_process");
+const AdmZip = require("adm-zip");
 require("datejs");
 
 const fileNames = [
@@ -75,21 +76,24 @@ const UNZIPPED = "unzipped";
             console.log("Вы ничего не выбрали. \nЗавершение работы...");
         }
 
-        Zip.unzip({
-            source: path.join(__dirname, SAVES, choicefolder.value),
-            destination: path.join(__dirname, UNZIPPED),
-        }).exec({
-            error: (err) => {
-                console.log(path.join(__dirname, SAVES, choicefolder.value));
-                console.log(path.join(__dirname, UNZIPPED));
-                console.log("Произошла ошибка при распаковке архива");
-                throw err;
-            },
-            success: () => {
-                console.log("Распаковка выполнена успешно!");
-                fs.rmdirSync(path.join(__dirname, UNZIPPED));
-            },
-        });
+        let zip = new AdmZip(path.join(__dirname, SAVES, choicefolder.value));
+        zip.extractAllTo(/*target path*/ path.join(__dirname, UNZIPPED), /*overwrite*/ true);
+
+        // Zip.unzip({
+        //     source: path.join(__dirname, SAVES, choicefolder.value),
+        //     destination: path.join(__dirname, UNZIPPED),
+        // }).exec({
+        //     error: (err) => {
+        //         console.log(path.join(__dirname, SAVES, choicefolder.value));
+        //         console.log(path.join(__dirname, UNZIPPED));
+        //         console.log("Произошла ошибка при распаковке архива");
+        //         throw err;
+        //     },
+        //     success: () => {
+        //         console.log("Распаковка выполнена успешно!");
+        //         fs.rmdirSync(path.join(__dirname, UNZIPPED));
+        //     },
+        // });
 
         console.log(choicefolder);
     };
