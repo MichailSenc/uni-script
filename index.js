@@ -10,6 +10,8 @@ const rimraf = require("rimraf");
 const ncp = require("ncp").ncp;
 const wrench = require("wrench");
 const util = require("util");
+const fse = require("fs-extra");
+const { override } = require("prompts");
 
 require("datejs");
 
@@ -99,7 +101,14 @@ const UNZIPPED = "unzipped";
             // });
             console.log(path.join(__dirname, UNZIPPED, folder));
             console.log(path.dirname(foldpath));
-            wrench.copyDirSyncRecursive(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath));
+            // wrench.copyDirSyncRecursive(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath));
+            fse.copySync(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath), true, () => {
+                if (err) {
+                    console.error(err);
+                } else {
+                    console.log("success!");
+                }
+            });
         });
 
         rimraf.sync(path.join(__dirname, UNZIPPED));
