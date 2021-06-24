@@ -58,6 +58,9 @@ const saves = "./saves";
             type: "autocomplete",
             name: "value",
             message: "Выберите сохранение",
+            suggest: (input, choices) => {
+                return choices.filter(item => item.title.indexOf(input) !== -1);
+            },
             choices: files.map((file, i) => {
                 return {
                     title: file,
@@ -71,12 +74,12 @@ const saves = "./saves";
         }
 
         Zip.unzip({
-            source: `${__dirname}/saves/${choicefolder.value}`,
-            destination: __dirname + '/unzipped',
+            source: `./saves/${choicefolder.value}`,
+            destination: "./",
         }).exec({
             error: (err) => {
                 console.log(`${__dirname}/saves/${choicefolder.value}`);
-                console.log(__dirname + '/unzipped');
+                console.log(__dirname);
                 console.log("Произошла ошибка при распаковке архива");
                 throw err;
             },
