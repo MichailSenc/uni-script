@@ -8,15 +8,17 @@ const { exec } = require("child_process");
 require("datejs");
 
 const fileNames = [
-    { path: "../gitblit/data", folder: "data" },
+    { path: "../gitblit/data/", folder: "data" },
     { path: "../jenkins/home/", folder: "home" },
     { path: "../kanboard/kanboard_data/", folder: "kanboard_data" },
-    { path: "../kanboard/kanboard_home/", folder: "kanboard_home" },
+    { path: "../kanboard/kanboard_plugins/", folder: "kanboard_plugins" },
     { path: "../kanboard/kanboard_ssl/", folder: "kanboard_ssl" },
 ];
 
+const saves = "./saves";
+
 (async () => {
-    const response = await prompts({
+    const choicetype = await prompts({
         type: "autocomplete",
         name: "value",
         message: "Выберите дейсвие",
@@ -28,7 +30,6 @@ const fileNames = [
     });
 
     const createSave = () => {
-        console.log("Сохранение...");
         const output = fs.createWriteStream(`${__dirname}/saves/${new Date().toString("dd-MM-yyyy-HH-mm-ss")}.zip`);
         const archive = archiver("zip", {
             zlib: { level: 9 }, // Sets the compression level.
@@ -36,7 +37,7 @@ const fileNames = [
 
         output.on("close", function () {
             console.log(archive.pointer() + " total bytes");
-            console.log("archiver has been finalized and the output file descriptor has closed.");
+            console.log("Архивирование закончено, выход файла закрыт.");
         });
 
         output.on("end", function () {
@@ -45,9 +46,8 @@ const fileNames = [
 
         archive.on("warning", function (err) {
             if (err.code === "ENOENT") {
-                // log warning
+                console.log('warning')
             } else {
-                // throw error
                 throw err;
             }
         });
@@ -59,27 +59,46 @@ const fileNames = [
         archive.pipe(output);
 
         fileNames.forEach(({ path, folder }) => {
-            console.log(__dirname + path, folder);
-            archive.directory(__dirname + path, folder);
+            console.log(`Архивирование ${path}...`);
+            archive.directory(__dirname + "/" + path, folder);
         });
 
         archive.finalize();
     };
 
-    const loadTask = () => {
-        console.log(new Date().toString("dd-MM-yyyy-HH-mm-ss"));
-        console.log("Загрзка...");
+    const loadTask = async () => {
+        const files = fs.readdirSync(saves);
+
+        if (files.length == 0) {
+            console.log('Нет доступных сохранений');
+            return;
+        }
+
+        const choicefolder = await prompts({
+            type: "autocomplete",
+            name: "value",
+            message: "Выберите сохранение",
+            choices: files.map((file, i) => {
+                console.log(file, i);
+                return {
+                    title: file,
+                    value: file,
+                };
+            }),
+        });
+
+        console.log(choicefolder);
     };
 
-    switch (response.value) {
+    switch (choicetype.value) {
         case 1:
             createSave();
             break;
         case 2:
-            loadTask();
+            await loadTask();
             break;
         default:
-            console.log("Дефолт...");
+            console.log("Выход...")
             return;
     }
 })();

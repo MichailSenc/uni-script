@@ -12,6 +12,7 @@
   "dependencies": {
     "archiver": "^5.3.0",
     "datejs": "^1.0.0-rc3",
+    "machinepack-zip": "^1.1.0",
     "prompts": "^2.4.1"
   }
 }
