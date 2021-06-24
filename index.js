@@ -45,6 +45,7 @@ if (process.argv[2] === '--help' || process.argv[2] === '-h') {
     });
 
     const createSave = () => {
+        console.log("Выполняется сохранение конфигурации...");
         Zip.zip({
             sources: fileNames.map(({ foldpath }) => foldpath),
             destination: path.join(__dirname, SAVES, `${new Date().toString("dd-MM-yyyy-HH-mm-ss")}.zip`),
