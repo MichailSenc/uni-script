@@ -6,6 +6,7 @@ const Zip = require("machinepack-zip");
 const path = require("path");
 const AdmZip = require("adm-zip");
 const ncp = require("ncp").ncp;
+const rimraf = require('rimraf');
 require("datejs");
 
 const fileNames = [
@@ -85,7 +86,7 @@ const UNZIPPED = "unzipped";
         console.log("Перенос файлов в нужные каталоги...");
         fileNames.forEach(({ foldpath, folder }) => {
             console.log(`Копирование ${folder} в ${path.dirname(foldpath)}...`)
-            fs.rmdirSync(foldpath);
+            rimraf.sync(foldpath);
             ncp(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath), function (err) {
                 if (err) {
                     return console.error(err);
@@ -94,7 +95,7 @@ const UNZIPPED = "unzipped";
             });
         });
 
-        fs.rmdirSync(path.join(__dirname, UNZIPPED));
+        rimraf.sync(path.join(__dirname, UNZIPPED));
         console.log("Перенос сохранения успешно выполнен!");
     };
 
