@@ -5,8 +5,12 @@ const fs = require("fs");
 const Zip = require("machinepack-zip");
 const path = require("path");
 const AdmZip = require("adm-zip");
+const rimraf = require("rimraf");
+
 const ncp = require("ncp").ncp;
-const rimraf = require('rimraf');
+const wrench = require("wrench");
+const util = require("util");
+
 require("datejs");
 
 const fileNames = [
@@ -85,14 +89,15 @@ const UNZIPPED = "unzipped";
 
         console.log("Перенос файлов в нужные каталоги...");
         fileNames.forEach(({ foldpath, folder }) => {
-            console.log(`Копирование ${folder} в ${path.dirname(foldpath)}...`)
+            console.log(`Копирование ${folder} в ${path.dirname(foldpath)}...`);
             rimraf.sync(foldpath);
-            ncp(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath), function (err) {
-                if (err) {
-                    return console.error(err);
-                }
-                console.log("done!");
-            });
+            // ncp(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath), function (err) {
+            //     if (err) {
+            //         return console.error(err);
+            //     }
+            //     console.log("done!");
+            // });
+            wrench.copyDirSyncRecursive(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath));
         });
 
         rimraf.sync(path.join(__dirname, UNZIPPED));

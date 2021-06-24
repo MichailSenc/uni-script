@@ -15,6 +15,7 @@
     "machinepack-zip": "^1.1.0",
     "ncp": "^2.0.0",
     "prompts": "^2.4.1",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "wrench": "^1.5.9"
   }
 }
