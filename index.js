@@ -8,11 +8,11 @@ const { exec } = require("child_process");
 require("datejs");
 
 const fileNames = [
-    { path: "gitblit/data", folder: "data" },
-    { path: "jenkins/home/", folder: "home" },
-    { path: "kanboard/kanboard_data/", folder: "kanboard_data" },
-    { path: "kanboard/kanboard_home/", folder: "kanboard_home" },
-    { path: "kanboard/kanboard_ssl/", folder: "kanboard_ssl" },
+    { path: "../gitblit/data", folder: "data" },
+    { path: "../jenkins/home/", folder: "home" },
+    { path: "../kanboard/kanboard_data/", folder: "kanboard_data" },
+    { path: "../kanboard/kanboard_home/", folder: "kanboard_home" },
+    { path: "../kanboard/kanboard_ssl/", folder: "kanboard_ssl" },
 ];
 
 (async () => {
@@ -29,7 +29,7 @@ const fileNames = [
 
     const createSave = () => {
         console.log("Сохранение...");
-        const output = fs.createWriteStream(__dirname + "/example.zip");
+        const output = fs.createWriteStream(`${__dirname}/saves/${new Date().toString("dd-MM-yyyy-HH-mm-ss")}.zip`);
         const archive = archiver("zip", {
             zlib: { level: 9 }, // Sets the compression level.
         });
@@ -59,8 +59,11 @@ const fileNames = [
         archive.pipe(output);
 
         fileNames.forEach(({ path, folder }) => {
-            archive.directory(__dirname + path, `${new Date().toString("dd-MM-yyyy-HH-mm-ss")}`);
+            console.log(__dirname + path, folder);
+            archive.directory(__dirname + path, folder);
         });
+
+        archive.finalize();
     };
 
     const loadTask = () => {
