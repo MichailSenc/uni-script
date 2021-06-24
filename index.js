@@ -4,16 +4,16 @@ const prompts = require("prompts");
 const fs = require("fs");
 const Zip = require("machinepack-zip");
 const path = require("path");
-const { exec } = require("child_process");
 const AdmZip = require("adm-zip");
+const ncp = require("ncp").ncp;
 require("datejs");
 
 const fileNames = [
-    { path: path.join(__dirname, "..", "gitblit", "data"), folder: "data" },
-    { path: path.join(__dirname, "..", "jenkins", "home"), folder: "home" },
-    { path: path.join(__dirname, "..", "kanboard", "kanboard_data"), folder: "kanboard_data" },
-    { path: path.join(__dirname, "..", "kanboard", "kanboard_plugins"), folder: "kanboard_plugins" },
-    { path: path.join(__dirname, "..", "kanboard", "kanboard_ssl"), folder: "kanboard_ssl" },
+    { foldpath: path.join(__dirname, "..", "gitblit", "data"), folder: "data" },
+    { foldpath: path.join(__dirname, "..", "jenkins", "home"), folder: "home" },
+    { foldpath: path.join(__dirname, "..", "kanboard", "kanboard_data"), folder: "kanboard_data" },
+    { foldpath: path.join(__dirname, "..", "kanboard", "kanboard_plugins"), folder: "kanboard_plugins" },
+    { foldpath: path.join(__dirname, "..", "kanboard", "kanboard_ssl"), folder: "kanboard_ssl" },
 ];
 
 fileNames.forEach((item) => console.log(item));
@@ -35,7 +35,7 @@ const UNZIPPED = "unzipped";
 
     const createSave = () => {
         Zip.zip({
-            sources: fileNames.map(({ path }) => path),
+            sources: fileNames.map(({ foldpath }) => foldpath),
             destination: path.join(__dirname, SAVES, `${new Date().toString("dd-MM-yyyy-HH-mm-ss")}.zip`),
         }).exec({
             error: (err) => {
@@ -74,28 +74,28 @@ const UNZIPPED = "unzipped";
 
         if (!choicefolder.value) {
             console.log("Вы ничего не выбрали. \nЗавершение работы...");
+            return;
         }
 
+        console.log("Распаковка файлов...");
         let zip = new AdmZip(path.join(__dirname, SAVES, choicefolder.value));
         zip.extractAllTo(/*target path*/ path.join(__dirname, UNZIPPED), /*overwrite*/ true);
+        console.log("Распаковка выполнена успешно!");
 
-        // Zip.unzip({
-        //     source: path.join(__dirname, SAVES, choicefolder.value),
-        //     destination: path.join(__dirname, UNZIPPED),
-        // }).exec({
-        //     error: (err) => {
-        //         console.log(path.join(__dirname, SAVES, choicefolder.value));
-        //         console.log(path.join(__dirname, UNZIPPED));
-        //         console.log("Произошла ошибка при распаковке архива");
-        //         throw err;
-        //     },
-        //     success: () => {
-        //         console.log("Распаковка выполнена успешно!");
-        //         fs.rmdirSync(path.join(__dirname, UNZIPPED));
-        //     },
-        // });
+        console.log("Перенос файлов в нужные каталоги...");
+        fileNames.forEach(({ foldpath, folder }) => {
+            console.log(`Копирование ${folder} в ${path.dirname(foldpath)}...`)
+            fs.rmdirSync(foldpath);
+            ncp(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath), function (err) {
+                if (err) {
+                    return console.error(err);
+                }
+                console.log("done!");
+            });
+        });
 
-        console.log(choicefolder);
+        fs.rmdirSync(path.join(__dirname, UNZIPPED));
+        console.log("Перенос сохранения успешно выполнен!");
     };
 
     switch (choicetype.value) {
