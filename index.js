@@ -97,6 +97,8 @@ const UNZIPPED = "unzipped";
             //     }
             //     console.log("done!");
             // });
+            console.log(path.join(__dirname, UNZIPPED, folder));
+            path.dirname(foldpath);
             wrench.copyDirSyncRecursive(path.join(__dirname, UNZIPPED, folder), path.dirname(foldpath));
         });
 
