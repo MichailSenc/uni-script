@@ -2,21 +2,23 @@
 
 const prompts = require("prompts");
 const fs = require("fs");
-const archiver = require("archiver");
 const Zip = require("machinepack-zip");
 const path = require("path");
 const { exec } = require("child_process");
 require("datejs");
 
 const fileNames = [
-    { path: "../gitblit/data/", folder: "data" },
-    { path: "../jenkins/home/", folder: "home" },
-    { path: "../kanboard/kanboard_data/", folder: "kanboard_data" },
-    { path: "../kanboard/kanboard_plugins/", folder: "kanboard_plugins" },
-    { path: "../kanboard/kanboard_ssl/", folder: "kanboard_ssl" },
+    { path: path.join(__dirname, "..", "gitblit", "data"), folder: "data" },
+    { path: path.join(__dirname, "..", "jenkins", "home"), folder: "home" },
+    { path: path.join(__dirname, "..", "kanboard", "kanboard_data"), folder: "kanboard_data" },
+    { path: path.join(__dirname, "..", "kanboard", "kanboard_plugins"), folder: "kanboard_plugins" },
+    { path: path.join(__dirname, "..", "kanboard", "kanboard_ssl"), folder: "kanboard_ssl" },
 ];
 
-const saves = "./saves";
+fileNames.forEach((item) => console.log(item));
+
+const SAVES = "saves";
+const UNZIPPED = "unzipped";
 
 (async () => {
     const choicetype = await prompts({
@@ -32,8 +34,8 @@ const saves = "./saves";
 
     const createSave = () => {
         Zip.zip({
-            sources: fileNames.map(({ path }) => __dirname + "/" + path),
-            destination: `${__dirname}/saves/${new Date().toString("dd-MM-yyyy-HH-mm-ss")}.zip`,
+            sources: fileNames.map(({ path }) => path),
+            destination: path.join(__dirname, SAVES, `${new Date().toString("dd-MM-yyyy-HH-mm-ss")}.zip`),
         }).exec({
             error: (err) => {
                 console.log("Произошла ошибка при архивировании");
@@ -47,7 +49,7 @@ const saves = "./saves";
     };
 
     const loadTask = async () => {
-        const files = fs.readdirSync(saves);
+        const files = fs.readdirSync(SAVES);
 
         if (files.length == 0) {
             console.log("Нет доступных сохранений");
@@ -59,7 +61,7 @@ const saves = "./saves";
             name: "value",
             message: "Выберите сохранение",
             suggest: (input, choices) => {
-                return choices.filter(item => item.title.indexOf(input) !== -1);
+                return choices.filter((item) => item.title.indexOf(input) !== -1);
             },
             choices: files.map((file, i) => {
                 return {
@@ -74,17 +76,18 @@ const saves = "./saves";
         }
 
         Zip.unzip({
-            source: `./saves/${choicefolder.value}`,
-            destination: "./",
+            source: path.join(__dirname, SAVES, choicefolder.value),
+            destination: path.join(__dirname, UNZIPPED),
         }).exec({
             error: (err) => {
-                console.log(`${__dirname}/saves/${choicefolder.value}`);
-                console.log(__dirname);
+                console.log(path.join(__dirname, SAVES, choicefolder.value));
+                console.log(path.join(__dirname, UNZIPPED));
                 console.log("Произошла ошибка при распаковке архива");
                 throw err;
             },
             success: () => {
-                console.log('Распаковка выполнена успешно!');
+                console.log("Распаковка выполнена успешно!");
+                fs.rmdirSync(path.join(__dirname, UNZIPPED));
             },
         });
 
