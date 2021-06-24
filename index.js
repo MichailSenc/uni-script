@@ -3,6 +3,7 @@
 const prompts = require("prompts");
 const fs = require("fs");
 const archiver = require("archiver");
+const Zip = require("machinepack-zip");
 const path = require("path");
 const { exec } = require("child_process");
 require("datejs");
@@ -30,47 +31,26 @@ const saves = "./saves";
     });
 
     const createSave = () => {
-        const output = fs.createWriteStream(`${__dirname}/saves/${new Date().toString("dd-MM-yyyy-HH-mm-ss")}.zip`);
-        const archive = archiver("zip", {
-            zlib: { level: 9 }, // Sets the compression level.
-        });
-
-        output.on("close", function () {
-            console.log(archive.pointer() + " total bytes");
-            console.log("Архивирование закончено, выход файла закрыт.");
-        });
-
-        output.on("end", function () {
-            console.log("Data has been drained");
-        });
-
-        archive.on("warning", function (err) {
-            if (err.code === "ENOENT") {
-                console.log('warning')
-            } else {
+        Zip.zip({
+            sources: fileNames.map(({ path }) => __dirname + "/" + path),
+            destination: `${__dirname}/saves/${new Date().toString("dd-MM-yyyy-HH-mm-ss")}.zip`,
+        }).exec({
+            error: (err) => {
+                console.log("Произошла ошибка при архивировании");
                 throw err;
-            }
+            },
+            success: ({ bytesWritten }) => {
+                console.log("Success!");
+                console.log(`${bytesWritten} total bytes`);
+            },
         });
-
-        archive.on("error", function (err) {
-            throw err;
-        });
-
-        archive.pipe(output);
-
-        fileNames.forEach(({ path, folder }) => {
-            console.log(`Архивирование ${path}...`);
-            archive.directory(__dirname + "/" + path, folder);
-        });
-
-        archive.finalize();
     };
 
     const loadTask = async () => {
         const files = fs.readdirSync(saves);
 
         if (files.length == 0) {
-            console.log('Нет доступных сохранений');
+            console.log("Нет доступных сохранений");
             return;
         }
 
@@ -79,12 +59,30 @@ const saves = "./saves";
             name: "value",
             message: "Выберите сохранение",
             choices: files.map((file, i) => {
-                console.log(file, i);
                 return {
                     title: file,
                     value: file,
                 };
             }),
+        });
+
+        if (!choicefolder.value) {
+            console.log("Вы ничего не выбрали. \nЗавершение работы...");
+        }
+
+        Zip.unzip({
+            source: `${__dirname}/saves/${choicefolder.value}`,
+            destination: __dirname + '/unzipped',
+        }).exec({
+            error: (err) => {
+                console.log(`${__dirname}/saves/${choicefolder.value}`);
+                console.log(__dirname + '/unzipped');
+                console.log("Произошла ошибка при распаковке архива");
+                throw err;
+            },
+            success: () => {
+                console.log('Распаковка выполнена успешно!');
+            },
         });
 
         console.log(choicefolder);
@@ -98,7 +96,7 @@ const saves = "./saves";
             await loadTask();
             break;
         default:
-            console.log("Выход...")
+            console.log("Выход...");
             return;
     }
 })();
