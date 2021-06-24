@@ -5,6 +5,7 @@ const fs = require("fs");
 const archiver = require("archiver");
 const path = require("path");
 const { exec } = require("child_process");
+require("datejs");
 
 const fileNames = [
     { path: "gitblit/data", folder: "data" },
@@ -56,9 +57,14 @@ const fileNames = [
         });
 
         archive.pipe(output);
+
+        fileNames.forEach(({ path, folder }) => {
+            archive.directory(__dirname + path, `${new Date().toString("dd-MM-yyyy-HH-mm-ss")}`);
+        });
     };
 
     const loadTask = () => {
+        console.log(new Date().toString("dd-MM-yyyy-HH-mm-ss"));
         console.log("Загрзка...");
     };
 
